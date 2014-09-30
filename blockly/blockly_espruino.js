@@ -43,6 +43,9 @@ var ESPRUINO_COL = 190;
 
 var PORTS = ["A","B","C"];
 var PINS = [
+      ["GPS", 'C3'],
+      ["RADIO", 'LED4'],
+      ["ACCEL", 'LED5'],
       ["LED1", 'LED1'],
       ["LED2", 'LED2'],
       ["LED3", 'LED3'],
@@ -182,6 +185,25 @@ Blockly.Blocks.espruino_digitalWrite = {
     this.setTooltip('Writes a Digital Value to a Pin');
   }
 };
+
+Blockly.Blocks.espruino_nx1Power = {
+  category: 'NX1',
+  init: function() {
+      this.appendValueInput('PIN')
+          .setCheck('Pin')
+          .appendField('Device');
+      this.appendValueInput('VAL')
+          .setCheck(['Number','Boolean'])
+          .appendField('Value');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Powers the Peripheral on or off');
+  }
+};
+
 Blockly.Blocks.espruino_digitalPulse = {
     category: 'Espruino',
     init: function() {
