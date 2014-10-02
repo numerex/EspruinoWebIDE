@@ -24,16 +24,6 @@
 
   <!-- Blockly toolbox -->
   <xml id="toolbox" style="display: none">
-	<category name="NX1">
-      <block type="espruino_pin"></block>
-      <block type="espruino_gpsPower">
-        <value name="VAL"><block type="logic_boolean"><title name="BOOL">TRUE</title></block></value>
-      </block>
-      <block type="espruino_gpsReading">
-        <value name="VAL"><block type="logic_boolean"><title name="BOOL">TRUE</title></block></value>
-      </block>
-
-	</category>
     <category name="Logic">
       <block type="controls_if"></block>
       <block type="logic_compare"></block>
