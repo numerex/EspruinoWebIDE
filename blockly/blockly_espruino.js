@@ -56,6 +56,65 @@ for (var p in PORTS)
     PINS.push([pinname,pinname]);
   }
 
+// NX1 Specific Blocks
+
+Blockly.Blocks.espruino_gpsPower = {
+  category: 'NX1',
+  init: function() {
+//      this.appendValueInput('PIN')
+//          .setCheck('Pin')
+//          .appendField('Device');
+      this.appendValueInput('VAL')
+          .setCheck(['Number','Boolean'])
+          .appendField('GPS');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Powers the GPS on or off');
+  }
+};
+
+Blockly.Blocks.espruino_testAccel = {
+  category: 'NX1',
+  init: function() {
+//      this.appendValueInput('PIN')
+//          .setCheck('Pin')
+//          .appendField('Device');
+      this.appendValueInput('VAL')
+          .setCheck(['Number','Boolean'])
+          .appendField('TestAccel');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Test of Accel');
+  }
+};
+Blockly.Blocks.espruino_gpsReading = {
+  category: 'NX1',
+  init: function() {
+//      this.appendValueInput('PIN')
+//          .setCheck('Pin')
+//          .appendField('Device');
+      this.appendValueInput('VAL')
+          .setCheck(['Number','Boolean'])
+          .appendField('GPS');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Returns a GPS reading');
+  }
+};
+
+
+// end NX1 specific blcoks  
+  
+  
 Blockly.Blocks.espruino_timeout = {
   category: 'Espruino',
   init: function() {
@@ -183,59 +242,6 @@ Blockly.Blocks.espruino_digitalWrite = {
     this.setColour(ESPRUINO_COL);
     this.setInputsInline(true);
     this.setTooltip('Writes a Digital Value to a Pin');
-  }
-};
-
-Blockly.Blocks.espruino_gpsPower = {
-  category: 'NX1',
-  init: function() {
-//      this.appendValueInput('PIN')
-//          .setCheck('Pin')
-//          .appendField('Device');
-      this.appendValueInput('VAL')
-          .setCheck(['Number','Boolean'])
-          .appendField('GPS');
-
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(ESPRUINO_COL);
-    this.setInputsInline(true);
-    this.setTooltip('Powers the GPS on or off');
-  }
-};
-
-Blockly.Blocks.espruino_testAccel = {
-  category: 'NX1',
-  init: function() {
-//      this.appendValueInput('PIN')
-//          .setCheck('Pin')
-//          .appendField('Device');
-      this.appendValueInput('VAL')
-          .setCheck(['Number','Boolean'])
-          .appendField('TestAccel');
-
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(ESPRUINO_COL);
-    this.setInputsInline(true);
-    this.setTooltip('Test of Accel');
-  }
-};
-Blockly.Blocks.espruino_gpsReading = {
-  category: 'NX1',
-  init: function() {
-//      this.appendValueInput('PIN')
-//          .setCheck('Pin')
-//          .appendField('Device');
-      this.appendValueInput('VAL')
-          .setCheck(['Number','Boolean'])
-          .appendField('GPS');
-
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(ESPRUINO_COL);
-    this.setInputsInline(true);
-    this.setTooltip('Returns a GPS reading');
   }
 };
 
@@ -378,6 +384,10 @@ Blockly.JavaScript.espruino_code = function() {
   return "eval("+code+");\n";
 };
 
+
+// NX1 specific block functions
+//
+
 Blockly.JavaScript.espruino_testAccel = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "function init() {\n"
@@ -398,6 +408,7 @@ Blockly.JavaScript.espruino_testAccel = function() {
   + "init();\n";
 
 };
+
 Blockly.JavaScript.espruino_gpsPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "digitalWrite(C3, "+val+");\n"
@@ -422,4 +433,5 @@ Blockly.JavaScript.espruino_gpsReading = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "print('test='+bob\r\n\r\n);";
 };
+// end NX1 specific block functions
 
