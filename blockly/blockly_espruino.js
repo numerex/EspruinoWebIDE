@@ -203,6 +203,24 @@ Blockly.Blocks.espruino_gpsPower = {
     this.setTooltip('Powers the GPS on or off');
   }
 };
+
+Blockly.Blocks.espruino_testAccel = {
+  category: 'NX1',
+  init: function() {
+//      this.appendValueInput('PIN')
+//          .setCheck('Pin')
+//          .appendField('Device');
+      this.appendValueInput('VAL')
+          .setCheck(['Number','Boolean'])
+          .appendField('TestAccel');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Test of Accel');
+  }
+};
 Blockly.Blocks.espruino_gpsReading = {
   category: 'NX1',
   init: function() {
@@ -360,6 +378,26 @@ Blockly.JavaScript.espruino_code = function() {
   return "eval("+code+");\n";
 };
 
+Blockly.JavaScript.espruino_testAccel = function() {
+  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return "function init() {\n"
+  + "digitalWrite(C5, 1);\n"
+  + "digitalWrite(C8,1);\n"
+  + "SPI2.setup({sck:B13, miso:B14, mosi:B15, baud: 1000000});\n"
+  + "var id = SPI2.send([0x8F, 0x00], C8)[1];\n"
+  + "print(+id);\n"
+  + "SPI2.send([0x60, 0x37, 0x00, 0x00, 0x08, 0x00, 0x00],C8);\n"
+  + "var accx = 0x001;\n"
+  +	"var accy = 0x010;\n"
+  + "var accz = 0x100;\n"
+  + "while(1) {\n"
+  + "  accx = SPI2.send([0xE8, 0x00, 0x00],C8)[1];\n"
+  + "  print('x:'+accx+' y:'+accy+' z:'+accz);\n"
+  + "}\n"
+  + "}\n"
+  + "init();\n";
+
+};
 Blockly.JavaScript.espruino_gpsPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "digitalWrite(C3, "+val+");\n"
