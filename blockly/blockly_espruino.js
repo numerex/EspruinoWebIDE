@@ -111,6 +111,31 @@ Blockly.Blocks.espruino_gpsReading = {
   }
 };
 
+Blockly.Blocks.espruino_connectGW = {
+  category: 'NX1',
+  init: function() {
+//      this.appendValueInput('PIN')
+//          .setCheck('Pin')
+//          .appendField('GATEWAY');
+      this.appendValueInput('VAL')
+//          .setCheck(['Number','Boolean'])
+          .setCheck('String')
+          .appendField('GATEWAY');
+      this.appendValueInput('VAL2')
+          .setCheck(['Number','Boolean'])
+          .appendField('PORT');
+      this.appendValueInput('VAL3')
+          .setCheck(['Number','Boolean'])
+          .appendField('MESSAGE');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Returns a GPS reading');
+  }
+};
+
 
 // end NX1 specific blcoks  
   
@@ -428,6 +453,10 @@ Blockly.JavaScript.espruino_gpsPower = function() {
 			+ "bob = cmd;\n"
 			+ "cmd = '';\n  }});\n";
 
+};
+Blockly.JavaScript.espruino_connectGW = function() {
+  var val = Blockly.JavaScript.valueToCode(this, 'GATEWAY', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return "print('test='+bob\r\n\r\n);";
 };
 Blockly.JavaScript.espruino_gpsReading = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
