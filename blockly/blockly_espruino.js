@@ -76,6 +76,24 @@ Blockly.Blocks.espruino_gpsPower = {
   }
 };
 
+Blockly.Blocks.espruino_cellPower = {
+  category: 'NX1',
+  init: function() {
+//      this.appendValueInput('PIN')
+//          .setCheck('Pin')
+//          .appendField('Device');
+      this.appendValueInput('VAL')
+          .setCheck(['Number','Boolean'])
+          .appendField('CELL');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Powers the cellular on or off');
+  }
+};
+
 Blockly.Blocks.espruino_testAccel = {
   category: 'NX1',
   init: function() {
@@ -434,6 +452,17 @@ Blockly.JavaScript.espruino_testAccel = function() {
 
 };
 
+Blockly.JavaScript.espruino_cellPower = function() {
+  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  if(val == "false") return "Serial1.write('Power down Cell');";
+  else return "Serial1.write('Power up Cell');";
+};
+
+Blockly.JavaScript.espruino_connectGW = function() {
+  var val = Blockly.JavaScript.valueToCode(this, 'GATEWAY', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return "print('test='+bob\r\n\r\n);";
+};
+
 Blockly.JavaScript.espruino_gpsPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "digitalWrite(C3, "+val+");\n"
@@ -453,10 +482,6 @@ Blockly.JavaScript.espruino_gpsPower = function() {
 			+ "bob = cmd;\n"
 			+ "cmd = '';\n  }});\n";
 
-};
-Blockly.JavaScript.espruino_connectGW = function() {
-  var val = Blockly.JavaScript.valueToCode(this, 'GATEWAY', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return "print('test='+bob\r\n\r\n);";
 };
 Blockly.JavaScript.espruino_gpsReading = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
