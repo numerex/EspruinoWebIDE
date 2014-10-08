@@ -155,6 +155,26 @@ Blockly.Blocks.espruino_connectGW = {
 };
 
 
+Blockly.Blocks.espruino_ms_timeout = {
+  category: 'Espruino',
+  init: function() {
+      this.appendValueInput('MILLISECONDS')
+          .setCheck('Number')
+          .appendField('wait');
+      this.appendDummyInput()
+          .appendField("milliseconds");
+      this.appendStatementInput('DO')
+           .appendField('do');
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip('Waits for a certain period before running code');
+  }
+};
+
+
 // end NX1 specific blcoks  
   
   
@@ -364,6 +384,15 @@ Blockly.Blocks.espruino_code = {
       this.setTooltip('Executes the given JavaScript code');
     }
   };
+  
+  
+Blockly.JavaScript.espruino_ms_timeout = function() {
+  var milliseconds = Blockly.JavaScript.valueToCode(this, 'MILLISECONDS',
+      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
+  return "setTimeout(function() {\n"+branch+" }, "+milliseconds+");\n";
+};
+  
 // -----------------------------------------------------------------------------------
 
 Blockly.JavaScript.text_print = function() {
@@ -371,6 +400,7 @@ Blockly.JavaScript.text_print = function() {
       Blockly.JavaScript.ORDER_NONE) || '\'\'';
   return 'print(' + argument0 + ');\n';
 };
+
 Blockly.JavaScript.espruino_timeout = function() {
   var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
       Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
