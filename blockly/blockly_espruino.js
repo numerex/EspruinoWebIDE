@@ -43,7 +43,7 @@ var ESPRUINO_COL = 190;
 
 var PORTS = ["A","B","C"];
 var PINS = [
-	  ["TAMPER", 'TAMPER'],
+	  ["TAMPER", 'E6'],
       ["GPS", 'C3'],
       ["RADIO", 'LED4'],
       ["ACCEL", 'C5'],
@@ -503,8 +503,18 @@ Blockly.JavaScript.espruino_testAccel = function() {
 
 Blockly.JavaScript.espruino_cellPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  if(val == "false") return "Serial1.write('Power down Cell');";
-  else return "Serial1.write('Power up Cell');"
+  if(val == "false") return "Serial1.write('Power down Cell');\n"
+	+ "digitalWrite(A0, 1);\n"
+	+ "delay(3500);\n"
+	+ "digitalWrite(A0, 0);\n"
+	+ "delay(2000);\n"
+	+ "digitalWrite(C1, 0);\n"
+	+ "digitalWrite(C0, 0);\n"
+	+ "digitalWrite(C2, 0);\n"
+	+ "delay(100);\n"
+	+ "analogWrite(A4, 0.0);\n";
+	
+  else return "Serial1.println('Power up Cell');"
 	+ "function delay(count) {\n"
 	+ "  for(x=0; x < count; x++)\n"
 	+ "    digitalWrite(D9, 0);\n"
@@ -512,17 +522,26 @@ Blockly.JavaScript.espruino_cellPower = function() {
 	+ "function turnOnHp() {\n"
 	+ "digitalWrite(C1, 0);\n"
 	+ "digitalWrite(C0, 0);\n"
-	+ "analogWrite(A4, 0.19);\n"
-	+ "delay(1000);\n"
+	+ "analogWrite(A4, 0.22);\n"
+	+ "delay(500);\n"
 	+ "analogWrite(A4, 0.18);\n"
-	+ "delay(1000);\n"
+	+ "delay(500);\n"
 	+ "analogWrite(A4, 0.17);\n"
-	+ "delay(1000);\n"
+	+ "delay(500);\n"
 	+ "digitalWrite(C2, 0);\n"
 	+ "delay(100);\n"
 	+ "digitalWrite(B6,1);\n"
 	+ "digitalWrite(C1, 1);\n"
 	+ "}\n"
+	+ "Serial3.setup(115200, {bytesize:8, parity:'none', stopbits:1}, {rx:B11, tx:B10 });\n"
+	+ "Serial3.on('data', function (data) {\n"
+	+ "cmd+=data;\n"
+	+ "Serial1.print(data);\n"
+	+ "var idx = cmd.indexOf(0x0d);\n"
+	+ "if (idx>0) {\n"
+//	+ "Serial1.print(''+cmd);\n"
+	+ "cmd = '';\n"
+	+ "}});\n"
 	+ "turnOnHp();\n"
 	+ "Serial1.println('High Power On');\n"
 	+ "digitalWrite(B6,1);\n"
@@ -542,39 +561,57 @@ Blockly.JavaScript.espruino_cellPower = function() {
 	+ "analogWrite(A4, 0.14);\n"
 	+ "digitalWrite(A0,1);\n"
 	+ "delay(800);\n"
-	+ "Serial3.setup(115200, {bytesize:8, parity:'none', stopbits:1}, {rx:B11, tx:B10 });\n"
-	+ "Serial3.on('data', function (data) {\n"
-	+ "cmd+=data;\n"
-	+ "Serial1.print(data);\n"
-	+ "var idx = cmd.indexOf(0x0d);\n"
-	+ "if (idx>0) {\n"
-//	+ "Serial1.print(''+cmd);\n"
-	+ "cmd = '';\n"
-	+ "}});\n"
 	+ "digitalWrite(B2,0);\n"
 	+ "digitalWrite(A0,0);\n"
-	+ "digitalWrite(A1,0);\n";
-//	+ "delay(3000);\n"
+	+ "digitalWrite(A1,0);\n"
+	+ "delay(20000);\n"
+	+ "Serial1.println('Sending SYSCFG');\n"
+	+ "Serial3.println('AT^SYSCFG=13,0,3fffffff,1,2');\n";
+	
+//	+ "Serial3.setup(115200, {bytesize:8, parity:'none', stopbits:1}, {rx:B11, tx:B10 });\n"
+//	+ "Serial3.on('data', function (data) {\n"
+//	+ "cmd+=data;\n"
+//	+ "Serial1.print(data);\n"
+//	+ "var idx = cmd.indexOf(0x0d);\n"
+//	+ "if (idx>0) {\n"
+////	+ "Serial1.print(''+cmd);\n"
+//	+ "cmd = '';\n"
+//	+ "}});\n"
+//	+ "digitalWrite(B2,0);\n"
+//	+ "digitalWrite(A0,0);\n"
+//	+ "digitalWrite(A1,0);\n"
+//	+ "process.memory();\n";
+//	+ "Serial1.println('UP and running');\n"
+//	+ "delay(10000);\n"
+//	+ "Serial1.println('Sending SYSCFG');\n"
+//	+ "Serial3.println('AT^SYSCFG=13,0,3fffffff,1,2');\n";
+
 //	+ "analogWrite(A4, 0.15);\n"
 //	+ "digitalWrite(A0,1);\n";
 };
 Blockly.JavaScript.espruino_cellReport = function() {
-  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  if(val == "false") return "Serial1.write('Power down Cell');";
-  else return "Serial1.write('Report Cell');";
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  if(pin == "false") return "Serial1.write('Power down Cell');";
+  else return "Serial1.write('Report Cell " +pin+ "');"
+	+ "digitalWrite(E6, 1);\n"
+	+ "tamper = digitalRead(E6);\n"
+	+ "if(tamper == 1) {\nSerial1.println('Tamper switch 1');\n}\n"
+	+ "if(tamper == 0) {\nSerial1.println('Tamper switch 0');\n}\n";
 };
 
 Blockly.JavaScript.espruino_connectGW = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'GATEWAY', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return "print('test='+bob\r\n\r\n);";
+  return "Serial3.println('AT^IPINIT=\"a1.nmrx.net\"');"
+	+ "delay(1000);\n"
+	+ "Serial3.println('AT^IPOPEN=1, \"UDP\", \"192.119.183.253\", 8010');\n";
 };
 
 Blockly.JavaScript.espruino_gpsPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return "digitalWrite(C3, "+val+");\n"
+  if(val == 'true') return "digitalWrite(C3, 0);\n"
 			+ "Serial2.setup(9600, {bytesize:8, parity:'none', stopbits:1}  );\n"
 			+ "var bob = '';\n"
-			+ "var cmd = '';\n"
+			+ "var cmd = '>';\n"
 			+ "Serial2.println('$PUBX,40,GSV,0,0,0,0,0,0*59');\n"
 			+ "Serial2.println('$PUBX,40,GSA,0,0,0,0,0,0*4E');\n"
 			+ "Serial2.println('$PUBX,40,GLL,0,0,0,0,0,0*5C');\n"
@@ -582,12 +619,12 @@ Blockly.JavaScript.espruino_gpsPower = function() {
 			+ "Serial2.println('$PUBX,40,VTG,0,0,0,0,0,0*5E');\n"
 			+ "Serial2.on('data', function (data) {\n" 
 			+ "cmd+=data;\n"
-			+ "var idx = cmd.indexOf('\r');\n"
+			+ "var idx = cmd.indexOf('\\r');\n"
 			+ "if (idx>0) {\n"
 			+ "print(''+cmd);\n"
 			+ "bob = cmd;\n"
-			+ "cmd = '';\n  }});\n";
-
+			+ "cmd = '>';\n  }});\n";
+	else return "digitalWrite(C3, 1);\n";
 };
 Blockly.JavaScript.espruino_gpsReading = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
