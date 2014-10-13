@@ -567,28 +567,9 @@ Blockly.JavaScript.espruino_cellPower = function() {
 	+ "delay(20000);\n"
 	+ "Serial1.println('Sending SYSCFG');\n"
 	+ "Serial3.println('AT^SYSCFG=13,0,3fffffff,1,2');\n";
-	
-//	+ "Serial3.setup(115200, {bytesize:8, parity:'none', stopbits:1}, {rx:B11, tx:B10 });\n"
-//	+ "Serial3.on('data', function (data) {\n"
-//	+ "cmd+=data;\n"
-//	+ "Serial1.print(data);\n"
-//	+ "var idx = cmd.indexOf(0x0d);\n"
-//	+ "if (idx>0) {\n"
-////	+ "Serial1.print(''+cmd);\n"
-//	+ "cmd = '';\n"
-//	+ "}});\n"
-//	+ "digitalWrite(B2,0);\n"
-//	+ "digitalWrite(A0,0);\n"
-//	+ "digitalWrite(A1,0);\n"
-//	+ "process.memory();\n";
-//	+ "Serial1.println('UP and running');\n"
-//	+ "delay(10000);\n"
-//	+ "Serial1.println('Sending SYSCFG');\n"
-//	+ "Serial3.println('AT^SYSCFG=13,0,3fffffff,1,2');\n";
 
-//	+ "analogWrite(A4, 0.15);\n"
-//	+ "digitalWrite(A0,1);\n";
 };
+
 Blockly.JavaScript.espruino_cellReport = function() {
   var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   if(pin == "false") return "Serial1.write('Power down Cell');";
@@ -631,4 +612,6 @@ Blockly.JavaScript.espruino_gpsReading = function() {
   return "print('test='+bob\r\n\r\n);";
 };
 // end NX1 specific block functions
+
+
 
