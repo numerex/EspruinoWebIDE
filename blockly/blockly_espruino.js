@@ -593,8 +593,12 @@ Blockly.JavaScript.espruino_cellReport = function() {
 };
 
 Blockly.JavaScript.espruino_connectGW = function() {
-  var val = Blockly.JavaScript.valueToCode(this, 'GATEWAY', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var port = Blockly.JavaScript.valueToCode(this, 'VAL2', Blockly.JavaScript.ORDER_NONE) || '0';
+//  var ip = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_NONE) || '\'\'';
+//  var ip = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_NONE;
+
   return "var mainSetTimeoutFrequency = 10 * 5;\n"
+	+ "Serial1.println("+port+");\n"
 	+ "var gsmModemReady = false;\n"
 	+ "var gsmSerialData = '';\n"
 	+ "var gsmSerialSendSequenceIndex = 0;\n"
@@ -626,7 +630,7 @@ Blockly.JavaScript.espruino_connectGW = function() {
 	+ "  ['AT^IPINIT=\"a1.nmrx.net\"', 0 ]\n"
 	+ "];\n"
 	+ "var gsmSendPacketSequence = [\n"
-	+ "  ['AT^IPOPEN=1,\"UDP\",\"192.119.183.253\",3008\\r',0],\n"
+	+ "  ['AT^IPOPEN=1,\"UDP\",\"192.119.183.253\",3008', 0],\n"
 	+ "  ['ATE1', 0 ],\n"
 	+ "  ['ATI', 0 ],\n"
 	+ "  ['AT^IPINIT=\"a1.nmrx.net\"', 0 ]\n"
