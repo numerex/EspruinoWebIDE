@@ -424,7 +424,7 @@ Blockly.JavaScript.espruino_timeout = function() {
   var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
       Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
   var branch = Blockly.JavaScript.statementToCode(this, 'DO');
-  return "setTimeout(function() {\n"+branch+" }, "+seconds+"*1000.0);\n";
+  return "setTimeout(function() {\n"+branch+" }, "+seconds+"*100.0);\n";
 };
 Blockly.JavaScript.espruino_getTime = function() {
   return ["getTime()\n", Blockly.JavaScript.ORDER_ATOMIC];
@@ -433,7 +433,7 @@ Blockly.JavaScript.espruino_interval = function() {
   var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
       Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
   var branch = Blockly.JavaScript.statementToCode(this, 'DO');
-  return "setInterval(function() {\n"+branch+" }, "+seconds+"*1000.0);\n";
+  return "setInterval(function() {\n"+branch+" }, "+seconds+"*100.0);\n";
 };
 Blockly.JavaScript.espruino_pin = function() {
   var code = this.getTitleValue('PIN');
@@ -483,21 +483,31 @@ Blockly.JavaScript.espruino_code = function() {
 Blockly.JavaScript.espruino_testAccel = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "function init() {\n"
-  + "digitalWrite(C5, 1);\n"
-  + "digitalWrite(C8,1);\n"
-  + "SPI2.setup({sck:B13, miso:B14, mosi:B15, baud: 1000000});\n"
-  + "var id = SPI2.send([0x8F, 0x00], C8)[1];\n"
-  + "print(+id);\n"
-  + "SPI2.send([0x60, 0x37, 0x00, 0x00, 0x08, 0x00, 0x00],C8);\n"
-  + "var accx = 0x001;\n"
-  +	"var accy = 0x010;\n"
-  + "var accz = 0x100;\n"
-  + "while(1) {\n"
-  + "  accx = SPI2.send([0xE8, 0x00, 0x00],C8)[1];\n"
-  + "  print('x:'+accx+' y:'+accy+' z:'+accz);\n"
-  + "}\n"
-  + "}\n"
-  + "init();\n";
+	+ "digitalWrite(C5, 1);\n"
+	+ "digitalWrite(C8,1);\n"
+	+ "SPI2.setup({sck:B13, miso:B14, mosi:B15, baud: 1000000});\n"
+	+ "var id = SPI2.send([0x8F, 0x00], C8)[1];\n"
+	+ "print(+id);\n"
+	+ "SPI2.send([0x60, 0x37, 0x00, 0x00, 0x08, 0x00, 0x00],C8);\n"
+	+ "while(1) {\n"
+	+ "d = SPI2.send([0xE8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],C8);\n"
+	+ "accx = (d[1] + (d[2] << 8) >> 4);\n"
+	+ "accy = (d[3] + (d[4] << 8) >> 4);\n"
+	+ "accz = (d[5] + (d[6] << 8) >> 4);\n"
+	+ "if(accx > 2048) {\n"
+	+ "accx = (accx - 4096);\n"
+	+ "}\n"
+	+ "if(accy > 2048) {\n"
+	+ "accy = (accy - 4096);\n"
+	+ "}\n"
+	+ "if(accz > 2048) {\n"
+	+ "accz = (accz - 4096);\n"
+	+ "}\n"
+	+ "delay(10000);\n"
+	+ "  print('x:'+accx+' y:'+accy+' z:'+accz);\n"
+	+ "}\n"
+	+ "}\n"
+	+ "init();\n";
 
 };
 
@@ -522,6 +532,8 @@ Blockly.JavaScript.espruino_cellPower = function() {
 	+ "function turnOnHp() {\n"
 	+ "digitalWrite(C1, 0);\n"
 	+ "digitalWrite(C0, 0);\n"
+	+ "analogWrite(A4, 0.50);\n"
+	+ "delay(500);\n"
 	+ "analogWrite(A4, 0.22);\n"
 	+ "delay(500);\n"
 	+ "analogWrite(A4, 0.18);\n"
@@ -584,8 +596,15 @@ Blockly.JavaScript.espruino_connectGW = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'GATEWAY', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "Serial3.println('AT^IPINIT=\"a1.nmrx.net\"');"
 	+ "delay(1000);\n"
-	+ "Serial3.println('AT^IPOPEN=1, \"UDP\", \"192.119.183.253\", 8010');\n";
+//	+ "Serial3.println('AT^IPOPEN=1, \"TCP\", \"12.107.219.125\", 443');\n"
+//	+ "delay(1000);\n"
+	+ "message =  '{\n    \"data\": {\n\"analog_input_01\": \"38\", \"device_name\": \"354524040689714\",\n" 
+	+ "\"device_name_type\": \"imei\",\n \"device_type\": \"nx1_javascript_demo\",\n\"event_type\": \"motion_cleared\",\n" 
+   + "\"sequence_number\": \"9822\"\n},\n\"headers\": {},\n\"id\": \"b36225b4-f757-4ec8-a7aa-613bc8432fb8\",\n" 
+   + "\"timestamp\": \"2014-10-14T20:44:32.000+0000\",\n\"type\": \"reading\"\n}'\n"
+	+ "print(message)\n";
 };
+
 
 Blockly.JavaScript.espruino_gpsPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
