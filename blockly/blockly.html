@@ -38,11 +38,8 @@
       </block>
 	</category>
 	<category name="NX1 GPS">
-      <block type="espruino_gpsPower">
-        <value name="VAL"><block type="logic_boolean"><title name="BOOL">TRUE</title></block></value>
-      </block>
       <block type="espruino_gpsReading">
-        <value name="VAL"><block type="logic_boolean"><title name="BOOL">TRUE</title></block></value>
+        <value name="VAL"><block type="text"><title name="TEXT">GPRMC</title></block></value>
       </block>
 
 	</category>
@@ -313,6 +310,9 @@
       </block>
       <block type="espruino_analogRead">
         <value name="PIN"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
+      </block>
+      <block type="espruino_tempRead">
+        <value name="PIN"><block type="espruino_pin"><title name="PIN">A6</title></block></value>
       </block>
       <block type="espruino_code">
       </block>

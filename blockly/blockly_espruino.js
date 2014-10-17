@@ -47,10 +47,16 @@ var PINS = [
       ["GPS", 'C3'],
       ["RADIO", 'LED4'],
       ["ACCEL", 'C5'],
-      ["LED1", 'LED1'],
-      ["LED2", 'LED2'],
-      ["LED3", 'LED3'],
+      ["LED1", 'B8'],
+      ["LED2", 'B9'],
+      ["TEMP", 'A6'],
       ["BTN1", 'BTN1']];
+var NMEAS = [
+	  ["GPRMC", 'GPRMC'],
+      ["GPGGA", 'GPGGA'],
+      ["GPGSA", 'GPGSA'],
+      ["GPGSV", 'GPGSV']];
+	  
 for (var p in PORTS)
   for (var i=0;i<16;i++) {
     var pinname = PORTS[p]+i;
@@ -390,6 +396,19 @@ Blockly.Blocks.espruino_analogRead = {
       this.setTooltip('Read an Analog Value from a Pin');
     }
   };
+Blockly.Blocks.espruino_tempRead = {
+    category: 'Espruino',
+    init: function() {
+        this.appendValueInput('PIN')
+            .setCheck('Pin')
+            .appendField('Temperature Pin');
+
+      this.setOutput(true, 'Number');
+      this.setColour(ESPRUINO_COL);
+      this.setInputsInline(true);
+      this.setTooltip('Read a Temperature');
+    }
+  };
 
 Blockly.Blocks.espruino_code = {
     category: 'Espruino',
@@ -479,17 +498,20 @@ Blockly.JavaScript.espruino_code = function() {
 
 // NX1 specific block functions
 //
+Blockly.JavaScript.espruino_tempRead = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return ["analogRead("+pin+")\n", Blockly.JavaScript.ORDER_ATOMIC];
+};
 
 Blockly.JavaScript.espruino_testAccel = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return "function init() {\n"
-	+ "digitalWrite(C5, 1);\n"
+  return "digitalWrite(C5, 1);\n"
 	+ "digitalWrite(C8,1);\n"
 	+ "SPI2.setup({sck:B13, miso:B14, mosi:B15, baud: 1000000});\n"
 	+ "var id = SPI2.send([0x8F, 0x00], C8)[1];\n"
 	+ "print(+id);\n"
 	+ "SPI2.send([0x60, 0x37, 0x00, 0x00, 0x08, 0x00, 0x00],C8);\n"
-	+ "while(1) {\n"
+	+ "function accelLoop() {\n"
 	+ "d = SPI2.send([0xE8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],C8);\n"
 	+ "accx = (d[1] + (d[2] << 8) >> 4);\n"
 	+ "accy = (d[3] + (d[4] << 8) >> 4);\n"
@@ -503,12 +525,12 @@ Blockly.JavaScript.espruino_testAccel = function() {
 	+ "if(accz > 2048) {\n"
 	+ "accz = (accz - 4096);\n"
 	+ "}\n"
-	+ "delay(10000);\n"
-	+ "  print('x:'+accx+' y:'+accy+' z:'+accz);\n"
+	+ "if(accx > 512) gsmSendPacket = true;\n"
+	+ "if(accy > 512) gsmSendPacket = true;\n"
+	+ "print('x:'+accx+' y:'+accy+' z:'+accz);\n"
+	+ "setTimeout(accelLoop, 100);\n"
 	+ "}\n"
-	+ "}\n"
-	+ "init();\n";
-
+	+ "setTimeout(accelLoop, 100);\n";
 };
 
 Blockly.JavaScript.espruino_cellPower = function() {
@@ -678,6 +700,7 @@ Blockly.JavaScript.espruino_connectGW = function() {
 	+ "      if(gsmSerialSendPacketIndex === 2)\n"
 	+ "      {\n"
 	+ "         Serial1.println('wait for echo response');\n" 
+	+ "         gsmSendPacket = false;\n"
 	+ "      }\n" 
 	+ "      if(gsmSerialSendPacketIndex === 3)\n"
 	+ "      {\n"
@@ -780,28 +803,60 @@ Blockly.JavaScript.espruino_connectGW = function() {
 
 Blockly.JavaScript.espruino_gpsPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  if(val == 'true') return "digitalWrite(C3, 0);\n"
-			+ "Serial2.setup(9600, {bytesize:8, parity:'none', stopbits:1}  );\n"
-			+ "var bob = '';\n"
-			+ "var cmd = '>';\n"
-			+ "Serial2.println('$PUBX,40,GSV,0,0,0,0,0,0*59');\n"
-			+ "Serial2.println('$PUBX,40,GSA,0,0,0,0,0,0*4E');\n"
-			+ "Serial2.println('$PUBX,40,GLL,0,0,0,0,0,0*5C');\n"
-			+ "Serial2.println('$PUBX,40,GGA,0,0,0,0,0,0*5A');\n"
-			+ "Serial2.println('$PUBX,40,VTG,0,0,0,0,0,0*5E');\n"
-			+ "Serial2.on('data', function (data) {\n" 
-			+ "cmd+=data;\n"
-			+ "var idx = cmd.indexOf('\\r');\n"
-			+ "if (idx>0) {\n"
-			+ "print(''+cmd);\n"
-			+ "bob = cmd;\n"
-			+ "cmd = '>';\n  }});\n";
-	else return "digitalWrite(C3, 1);\n";
+  if(val == 'true') return "digitalWrite(C3, 0);\n";
+  else return "digitalWrite(C3, 1);\n";
 };
 Blockly.JavaScript.espruino_gpsReading = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return "print('test='+bob\r\n\r\n);";
+return "function parseRMC(rmc) {\n"
+  + "Serial1.println('[' +rmc+ ']');\n"
+  +	"var sA = rmc.split(',');\n"
+  + "var tag = sA[0];\n"
+  +	"var time = sA[1].substring(0, 2) + ':' + sA[1].substring(2, 4) + ':' + sA[1].substring(4, 6);\n"
+  +	"var status = sA[2];\n"
+  +	"var latitude = parseFloat(sA[3].substring(0, 2)) + parseFloat(sA[3].substring(2)) / 60;\n"
+  + "if ('S' === sA[4]) {\n"
+  +	"	latitude = latitude * -1;\n"
+  +	"}\n"
+  +	"var longitude = parseFloat(sA[5].substring(0, 3)) + parseFloat(sA[5].substring(3)) / 60;\n"
+  +	"if ('W' === sA[6]) {\n"
+  +	"		longitude = longitude * -1;\n"
+  +	"	}\n"
+  +	"	var speed = sA[7];\n"
+  +	"	var calendar = (parseInt(sA[9].substring(4, 6)) + 2000) + '-' + sA[9].substring(2, 4) + '-' + sA[9].substring(0, 2);\n"
+  +	"	rmc = {\n"
+  +	"		'tag': tag,\n"
+  +	"		'status': status,\n"
+  +	"		'latitude': latitude,\n"
+  +	"		'longitude': longitude,\n"
+  +	"		'speed': speed,\n"
+  +	"		'timestamp': calendar + 'T' + time + '.000+0000'\n"		
+  +	"	};\n"
+  +	"	return rmc;\n"
+  +	"}\n"
+  + "digitalWrite(C3, 0);\n"
+  + "Serial2.setup(9600, {bytesize:8, parity:'none', stopbits:1}  );\n"
+  + "var cmd = '>';\n"
+  + "Serial2.println('$PUBX,40,GSV,0,0,0,0,0,0*59');\n"
+  + "Serial2.println('$PUBX,40,GSA,0,0,0,0,0,0*4E');\n"
+  + "Serial2.println('$PUBX,40,GLL,0,0,0,0,0,0*5C');\n"
+  + "Serial2.println('$PUBX,40,GGA,0,0,0,0,0,0*5A');\n"
+  + "Serial2.println('$PUBX,40,VTG,0,0,0,0,0,0*5E');\n"
+  + "Serial2.on('data', function (data) {\n" 
+  + "cmd+=data;\n" 
+  + "var idx = cmd.indexOf('\\r');\n"
+  + "if (idx>0) {\n"
+  + "print(''+cmd);\n"
+  + "newRMC = parseRMC(cmd);\n"
+  + "Serial1.println(newRMC.tag);\n"
+  + "Serial1.println(newRMC.status);\n"
+  + "Serial1.println(newRMC.latitude);\n"
+  + "Serial1.println(newRMC.longitude);\n"
+  + "Serial1.println(newRMC.speed);\n"
+  + "Serial1.println(newRMC.timestamp);\n"
+  + "cmd = '>';\n  }});\n";
 };
+
 // end NX1 specific block functions
 
 
