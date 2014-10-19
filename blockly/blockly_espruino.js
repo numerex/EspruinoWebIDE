@@ -86,9 +86,19 @@ Blockly.Blocks.espruino_gpsPower = {
 Blockly.Blocks.espruino_cellReport = {
   category: 'NX1',
   init: function() {
-      this.appendValueInput('PIN')
-          .setCheck('Pin')
-          .appendField('Report');
+      this.appendValueInput('VAL1')
+          .setCheck('String')
+          .appendField('ACCEL');
+      this.appendValueInput('VAL2')
+          .setCheck('String')
+          .appendField('TEMPERATURE');
+      this.appendValueInput('VAL3')
+          .setCheck('String')
+          .appendField('LATITUDE');
+      this.appendValueInput('VAL4')
+          .setCheck('String')
+          .appendField('LONGITUDE');
+
 //      this.appendValueInput('VAL')
  //         .setCheck(['Number','Boolean'])
  //         .appendField('CELL');
@@ -96,7 +106,7 @@ Blockly.Blocks.espruino_cellReport = {
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setColour(ESPRUINO_COL);
-    this.setInputsInline(true);
+    this.setInputsInline(false);
     this.setTooltip('Sends status of PIN');
   }
 };
@@ -167,14 +177,14 @@ Blockly.Blocks.espruino_connectGW = {
       this.appendValueInput('VAL2')
           .setCheck(['Number','Boolean'])
           .appendField('PORT');
-      this.appendValueInput('VAL3')
-          .setCheck(['Number','Boolean'])
-          .appendField('MESSAGE');
+//      this.appendValueInput('VAL3')
+//          .setCheck(['Number','Boolean'])
+//          .appendField('MESSAGE');
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setColour(ESPRUINO_COL);
-    this.setInputsInline(true);
+    this.setInputsInline(false);
     this.setTooltip('Returns a GPS reading');
   }
 };
@@ -507,6 +517,7 @@ Blockly.JavaScript.espruino_testAccel = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return "digitalWrite(C5, 1);\n"
 	+ "digitalWrite(C8,1);\n"
+	+ "var gsmSendPacket = false;\n"
 	+ "SPI2.setup({sck:B13, miso:B14, mosi:B15, baud: 1000000});\n"
 	+ "var id = SPI2.send([0x8F, 0x00], C8)[1];\n"
 	+ "print(+id);\n"
@@ -525,8 +536,8 @@ Blockly.JavaScript.espruino_testAccel = function() {
 	+ "if(accz > 2048) {\n"
 	+ "accz = (accz - 4096);\n"
 	+ "}\n"
-	+ "if(accx > 512) gsmSendPacket = true;\n"
-	+ "if(accy > 512) gsmSendPacket = true;\n"
+	+ "if(Math.abs(accx) > 512) gsmSendPacket = true;\n"
+	+ "if(Math.abs(accy) > 512) gsmSendPacket = true;\n"
 	+ "print('x:'+accx+' y:'+accy+' z:'+accz);\n"
 	+ "setTimeout(accelLoop, 100);\n"
 	+ "}\n"
@@ -536,17 +547,24 @@ Blockly.JavaScript.espruino_testAccel = function() {
 Blockly.JavaScript.espruino_cellPower = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   if(val == "false") return "Serial1.write('Power down Cell');\n"
-	+ "digitalWrite(A0, 1);\n"
-	+ "delay(3500);\n"
-	+ "digitalWrite(A0, 0);\n"
-	+ "delay(2000);\n"
-	+ "digitalWrite(C1, 0);\n"
-	+ "digitalWrite(C0, 0);\n"
-	+ "digitalWrite(C2, 0);\n"
-	+ "delay(100);\n"
-	+ "analogWrite(A4, 0.0);\n";
+  + "digitalWrite(B9, 1);\n"
+  + "digitalWrite(B8, 0);\n";
+//	+ "digitalWrite(A0, 1);\n"
+//	+ "delay(3500);\n"
+//	+ "digitalWrite(A0, 0);\n"
+//	+ "delay(2000);\n"
+//	+ "digitalWrite(C1, 0);\n"
+//	+ "digitalWrite(C0, 0);\n"
+//	+ "digitalWrite(C2, 0);\n"
+//	+ "delay(100);\n"
+//	+ "analogWrite(A4, 0.0);\n";
 	
   else return "Serial1.println('Power up Cell');"
+  + "var temperature = 72.1;\n"
+  + "var gpsLat = 0.0;\n"
+  + "var gpsLong = 0.0;\n"
+  + "digitalWrite(B9, 0);\n"
+  + "digitalWrite(B8, 1);\n"
 	+ "function delay(count) {\n"
 	+ "  for(x=0; x < count; x++)\n"
 	+ "    digitalWrite(D9, 0);\n"
@@ -573,7 +591,6 @@ Blockly.JavaScript.espruino_cellPower = function() {
 	+ "Serial1.print(data);\n"
 	+ "var idx = cmd.indexOf(0x0d);\n"
 	+ "if (idx>0) {\n"
-//	+ "Serial1.print(''+cmd);\n"
 	+ "cmd = '';\n"
 	+ "}});\n"
 	+ "turnOnHp();\n"
@@ -605,13 +622,12 @@ Blockly.JavaScript.espruino_cellPower = function() {
 };
 
 Blockly.JavaScript.espruino_cellReport = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  if(pin == "false") return "Serial1.write('Power down Cell');";
-  else return "Serial1.write('Report Cell " +pin+ "');"
-	+ "digitalWrite(E6, 1);\n"
-	+ "tamper = digitalRead(E6);\n"
-	+ "if(tamper == 1) {\nSerial1.println('Tamper switch 1');\n}\n"
-	+ "if(tamper == 0) {\nSerial1.println('Tamper switch 0');\n}\n";
+  var val1 = Blockly.JavaScript.valueToCode(this, 'TEXT', Blockly.JavaScript.ORDER_NONE) || '\'\'';
+  var val2 = Blockly.JavaScript.valueToCode(this, 'TEXT', Blockly.JavaScript.ORDER_NONE) || '\'\'';
+  var val3 = Blockly.JavaScript.valueToCode(this, 'TEXT', Blockly.JavaScript.ORDER_NONE) || '\'\'';
+  var val4 = Blockly.JavaScript.valueToCode(this, 'TEXT', Blockly.JavaScript.ORDER_NONE) || '\'\'';
+  return "Serial1.write('Power down Cell');";
+
 };
 
 Blockly.JavaScript.espruino_connectGW = function() {
@@ -629,7 +645,6 @@ Blockly.JavaScript.espruino_connectGW = function() {
 	+ "var gsmSerialSendSequenceERROR = false;\n"
 	+ "var gsmSerialSendPacketIndex = 0;\n"
 	+ "var gsmSerialSendPacketOK = false;\n"
-	+ "var gsmSendPacket = false;\n"
 	+ "var gsmCommand = '';\n"
 	+ "var gsmResponse = '';\n"
 	+ "var temperature = 73.5;\n"
@@ -809,7 +824,6 @@ Blockly.JavaScript.espruino_gpsPower = function() {
 Blockly.JavaScript.espruino_gpsReading = function() {
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
 return "function parseRMC(rmc) {\n"
-  + "Serial1.println('[' +rmc+ ']');\n"
   +	"var sA = rmc.split(',');\n"
   + "var tag = sA[0];\n"
   +	"var time = sA[1].substring(0, 2) + ':' + sA[1].substring(2, 4) + ':' + sA[1].substring(4, 6);\n"
@@ -847,13 +861,19 @@ return "function parseRMC(rmc) {\n"
   + "var idx = cmd.indexOf('\\r');\n"
   + "if (idx>0) {\n"
   + "print(''+cmd);\n"
+  + "var rmc = cmd.split(',');\n"
+  + "  if(rmc.length === 13) {\n"
   + "newRMC = parseRMC(cmd);\n"
+  + "if (newRMC.status === 'A') {\n"
+  + "Serial1.println('Good GPS signal');\n"
   + "Serial1.println(newRMC.tag);\n"
   + "Serial1.println(newRMC.status);\n"
   + "Serial1.println(newRMC.latitude);\n"
   + "Serial1.println(newRMC.longitude);\n"
   + "Serial1.println(newRMC.speed);\n"
   + "Serial1.println(newRMC.timestamp);\n"
+  + "}\n"
+  + "}\n"
   + "cmd = '>';\n  }});\n";
 };
 
